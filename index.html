@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APEX CRM v7 - Complete User Flow Map</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Space Grotesk',sans-serif; background:#0A0A0A; color:#E0E0E0; display:flex; height:100vh; overflow:hidden; }
+
+  /* SIDEBAR */
+  #sidebar { width:280px; background:#0F0F0F; border-right:1px solid #1E1E1E; display:flex; flex-direction:column; overflow:hidden; flex-shrink:0; }
+  #sidebar-header { padding:20px; border-bottom:1px solid #1E1E1E; }
+  #sidebar-header h1 { font-size:18px; font-weight:700; color:#C8A97E; letter-spacing:1px; }
+  #sidebar-header p { font-size:11px; color:#888; margin-top:4px; }
+  #sidebar-nav { flex:1; overflow-y:auto; padding:8px; }
+  #sidebar-nav::-webkit-scrollbar { width:4px; }
+  #sidebar-nav::-webkit-scrollbar-thumb { background:#333; border-radius:4px; }
+  .nav-section { margin-bottom:4px; }
+  .nav-section-title { font-size:10px; font-weight:600; color:#C8A97E; text-transform:uppercase; letter-spacing:1.5px; padding:12px 12px 6px; }
+  .nav-item { display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:8px; cursor:pointer; transition:all 0.2s; font-size:12px; color:#999; }
+  .nav-item:hover { background:#1A1A1A; color:#E0E0E0; }
+  .nav-item.active { background:rgba(200,169,126,0.12); color:#C8A97E; font-weight:600; }
+  .nav-icon { width:20px; height:20px; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
+
+  /* MAIN */
+  #main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  #topbar { height:56px; background:#0F0F0F; border-bottom:1px solid #1E1E1E; display:flex; align-items:center; padding:0 24px; gap:16px; flex-shrink:0; }
+  #topbar h2 { font-size:16px; font-weight:600; color:#FFF; flex:1; }
+  .stats-badge { background:#141414; border:1px solid #1E1E1E; border-radius:20px; padding:4px 12px; font-size:11px; color:#C8A97E; }
+  #content { flex:1; overflow-y:auto; padding:32px; }
+  #content::-webkit-scrollbar { width:6px; }
+  #content::-webkit-scrollbar-thumb { background:#333; border-radius:4px; }
+
+  /* FLOW CARDS */
+  .flow-header { margin-bottom:24px; }
+  .flow-header h2 { font-size:28px; font-weight:700; color:#FFF; margin-bottom:8px; }
+  .flow-header p { font-size:14px; color:#888; line-height:1.6; max-width:800px; }
+  .flow-section { margin-bottom:32px; }
+  .flow-section h3 { font-size:18px; font-weight:600; color:#C8A97E; margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid #1E1E1E; }
+
+  .card { background:#141414; border:1px solid #1E1E1E; border-radius:12px; padding:20px; margin-bottom:16px; transition:all 0.3s; }
+  .card:hover { border-color:#C8A97E; transform:translateY(-1px); }
+  .card h4 { font-size:15px; font-weight:600; color:#FFF; margin-bottom:8px; }
+  .card p { font-size:13px; color:#999; line-height:1.6; }
+  .card .label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; display:inline-block; padding:2px 8px; border-radius:4px; }
+  .label-agent { background:rgba(124,109,245,0.15); color:#7C6DF5; }
+  .label-flow { background:rgba(200,169,126,0.15); color:#C8A97E; }
+  .label-system { background:rgba(45,212,191,0.15); color:#2DD4BF; }
+  .label-api { background:rgba(251,146,60,0.15); color:#FB923C; }
+
+  /* PIPELINE TABLE */
+  .pipeline-table { width:100%; border-collapse:collapse; margin:16px 0; }
+  .pipeline-table th { text-align:left; font-size:11px; font-weight:600; color:#C8A97E; text-transform:uppercase; letter-spacing:1px; padding:8px 12px; border-bottom:1px solid #1E1E1E; }
+  .pipeline-table td { font-size:12px; color:#CCC; padding:10px 12px; border-bottom:1px solid #111; vertical-align:top; }
+  .pipeline-table tr:hover td { background:#1A1A1A; }
+
+  /* AGENT GRID */
+  .agent-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:16px; }
+  .agent-card { background:#141414; border:1px solid #1E1E1E; border-radius:12px; padding:20px; transition:all 0.3s; }
+  .agent-card:hover { border-color:#7C6DF5; transform:translateY(-2px); box-shadow:0 8px 24px rgba(124,109,245,0.1); }
+  .agent-name { font-size:16px; font-weight:700; color:#FFF; margin-bottom:2px; }
+  .agent-role { font-size:11px; color:#7C6DF5; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+  .agent-desc { font-size:12px; color:#999; line-height:1.5; margin-bottom:12px; }
+  .agent-meta { display:flex; flex-wrap:wrap; gap:6px; }
+  .agent-tag { font-size:10px; background:#1A1A1A; color:#888; padding:3px 8px; border-radius:4px; border:1px solid #222; }
+  .agent-tag.schedule { color:#2DD4BF; border-color:rgba(45,212,191,0.3); }
+  .agent-tag.wave { color:#C8A97E; border-color:rgba(200,169,126,0.3); }
+
+  /* FLOW DIAGRAM */
+  .flow-steps { display:flex; align-items:flex-start; gap:0; flex-wrap:wrap; margin:16px 0; }
+  .flow-step { background:#141414; border:1px solid #1E1E1E; border-radius:10px; padding:14px 16px; min-width:140px; max-width:180px; text-align:center; position:relative; }
+  .flow-step h5 { font-size:12px; font-weight:600; color:#FFF; margin-bottom:4px; }
+  .flow-step p { font-size:10px; color:#888; }
+  .flow-arrow { display:flex; align-items:center; color:#C8A97E; font-size:18px; padding:0 4px; margin-top:16px; }
+
+  /* METRIC CARDS */
+  .metrics-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; margin:16px 0; }
+  .metric-card { background:#141414; border:1px solid #1E1E1E; border-radius:10px; padding:16px; text-align:center; }
+  .metric-value { font-size:24px; font-weight:700; color:#C8A97E; }
+  .metric-label { font-size:11px; color:#888; margin-top:4px; }
+
+  /* DETAIL LIST */
+  .detail-list { list-style:none; margin:12px 0; }
+  .detail-list li { font-size:13px; color:#CCC; padding:6px 0; border-bottom:1px solid #111; display:flex; gap:8px; }
+  .detail-list li::before { content:""; width:6px; height:6px; background:#C8A97E; border-radius:50%; margin-top:6px; flex-shrink:0; }
+
+  /* SCORING TABLE */
+  .score-tier { display:flex; align-items:center; gap:8px; margin:8px 0; padding:10px 14px; background:#141414; border:1px solid #1E1E1E; border-radius:8px; }
+  .score-tier .pts { font-size:20px; font-weight:700; color:#C8A97E; min-width:50px; }
+  .score-tier .info { flex:1; }
+  .score-tier .info h5 { font-size:13px; color:#FFF; font-weight:600; }
+  .score-tier .info p { font-size:11px; color:#888; }
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div id="sidebar-header">
+    <h1>APEX CRM v7</h1>
+    <p>Complete User Flow Map</p>
+  </div>
+  <div id="sidebar-nav"></div>
+</div>
+
+<div id="main">
+  <div id="topbar">
+    <h2 id="topbar-title">Executive Summary</h2>
+    <span class="stats-badge">25 AI Agents</span>
+    <span class="stats-badge">150+ Endpoints</span>
+    <span class="stats-badge">10-Stage Pipeline</span>
+  </div>
+  <div id="content"></div>
+</div>
+
+<script>
+const SECTIONS = [
+  { cat:"Overview", items:[
+    { id:"exec", icon:"", title:"Executive Summary", render:renderExecSummary },
+    { id:"arch", icon:"", title:"Architecture Overview", render:renderArchitecture },
+    { id:"data", icon:"", title:"Data Models & Schema", render:renderDataModels },
+    { id:"icp", icon:"", title:"ICP & Scoring", render:renderICP },
+  ]},
+  { cat:"AI Agents", items:[
+    { id:"wave1", icon:"", title:"Wave 1: Core Pipeline (1-12)", render:renderWave1 },
+    { id:"wave2", icon:"", title:"Wave 2: Sales Cycle (13-17)", render:renderWave2 },
+    { id:"wave3", icon:"", title:"Wave 3: Intelligence (18-20)", render:renderWave3 },
+    { id:"wave4", icon:"", title:"Wave 4: Learning (21-22)", render:renderWave4 },
+    { id:"wave5", icon:"", title:"Wave 5: Pipeline Ops (23-25)", render:renderWave5 },
+  ]},
+  { cat:"Lead & Pipeline", items:[
+    { id:"leads", icon:"", title:"Lead Management Flows", render:renderLeadMgmt },
+    { id:"pipeline", icon:"", title:"10-Stage Pipeline", render:renderPipeline },
+  ]},
+  { cat:"Outreach Engine", items:[
+    { id:"email", icon:"", title:"Email System & Hermes", render:renderEmail },
+    { id:"campaigns", icon:"", title:"Campaign Management", render:renderCampaigns },
+    { id:"sequences", icon:"", title:"Sequence Orchestration", render:renderSequences },
+  ]},
+  { cat:"AI & Intelligence", items:[
+    { id:"scoring", icon:"", title:"AI Scoring & Recommendations", render:renderAIScoring },
+    { id:"personalizer", icon:"", title:"Personalizer Engine", render:renderPersonalizer },
+    { id:"pan", icon:"", title:"Pan Agent - Lead Sourcing", render:renderPan },
+  ]},
+  { cat:"Systems", items:[
+    { id:"automation", icon:"", title:"Automation Rules Engine", render:renderAutomation },
+    { id:"bounce", icon:"", title:"Bounce Detection & Re-Enrichment", render:renderBounce },
+    { id:"linkedin", icon:"", title:"LinkedIn Prospecting", render:renderLinkedIn },
+    { id:"intel", icon:"", title:"Market Intelligence", render:renderMarketIntel },
+    { id:"calendar", icon:"", title:"Calendar & Meetings", render:renderCalendar },
+    { id:"proposals", icon:"", title:"Proposal System & Tiers", render:renderProposals },
+  ]},
+  { cat:"Reporting", items:[
+    { id:"reports", icon:"", title:"Reporting & Analytics", render:renderReports },
+    { id:"eod", icon:"", title:"End-of-Day Report Engine", render:renderEOD },
+  ]},
+  { cat:"Infrastructure", items:[
+    { id:"notifications", icon:"", title:"Notification System", render:renderNotifications },
+    { id:"webhooks", icon:"", title:"Webhook Integration", render:renderWebhooks },
+    { id:"rbac", icon:"", title:"User Management & RBAC", render:renderRBAC },
+    { id:"scheduler", icon:"", title:"Autonomous Scheduler", render:renderScheduler },
+    { id:"backup", icon:"", title:"Backup & Recovery", render:renderBackup },
+    { id:"frontend", icon:"", title:"Frontend SPA & UI", render:renderFrontend },
+    { id:"flags", icon:"", title:"v7 Feature Flags", render:renderFlags },
+    { id:"guardrails", icon:"", title:"Guardrails & Compliance", render:renderGuardrails },
+    { id:"infra", icon:"", title:"Infrastructure & Deployment", render:renderInfra },
+    { id:"metrics", icon:"", title:"Performance & Projections", render:renderMetrics },
+  ]}
+];
+
+// Build sidebar
+const nav = document.getElementById('sidebar-nav');
+SECTIONS.forEach(sec => {
+  let h = document.createElement('div');
+  h.className='nav-section';
+  h.innerHTML=`<div class="nav-section-title">${sec.cat}</div>`;
+  sec.items.forEach(item => {
+    let d = document.createElement('div');
+    d.className='nav-item';
+    d.dataset.id=item.id;
+    d.innerHTML=`<span class="nav-icon">${item.icon}</span>${item.title}`;
+    d.onclick=()=>selectSection(item.id);
+    h.appendChild(d);
+  });
+  nav.appendChild(h);
+});
+
+function selectSection(id) {
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelector(`.nav-item[data-id="${id}"]`).classList.add('active');
+  let section = SECTIONS.flatMap(s=>s.items).find(i=>i.id===id);
+  document.getElementById('topbar-title').textContent=section.title;
+  document.getElementById('content').innerHTML='';
+  section.render(document.getElementById('content'));
+}
+
+function makeFlowSteps(steps){
+  let html='<div class="flow-steps">';
+  steps.forEach((s,i)=>{
+    html+=`<div class="flow-step"><h5>${s.title}</h5><p>${s.desc||''}</p></div>`;
+    if(i<steps.length-1) html+=`<div class="flow-arrow">&#8594;</div>`;
+  });
+  return html+'</div>';
+}
+
+function makeAgentCard(name,code,role,desc,schedule,wave,downstream){
+  return `<div class="agent-card">
+    <div class="agent-name">${name} <span style="color:#555;font-weight:400;font-size:12px">(${code})</span></div>
+    <div class="agent-role">${role}</div>
+    <div class="agent-desc">${desc}</div>
+    <div class="agent-meta">
+      <span class="agent-tag wave">Wave ${wave}</span>
+      <span class="agent-tag schedule">${schedule}</span>
+      ${downstream?`<span class="agent-tag">&#8594; ${downstream}</span>`:''}
+    </div>
+  </div>`;
+}
+
+// ========== RENDER FUNCTIONS ==========
+
+function renderExecSummary(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Executive Summary & System Identity</h2>
+      <p>APEX CRM is Barsys's AI-powered outbound sales operating system, purpose-built to drive corporate events revenue for the Barsys 360 AI Cocktail Machine. A full-stack platform that autonomously sources leads, scores them, executes multi-channel outreach, monitors replies, books meetings, generates proposals, and manages the entire sales pipeline.</p>
+    </div>
+    <div class="metrics-grid">
+      <div class="metric-card"><div class="metric-value">25,066</div><div class="metric-label">Total Contacts</div></div>
+      <div class="metric-card"><div class="metric-value">10,026</div><div class="metric-label">Accounts</div></div>
+      <div class="metric-card"><div class="metric-value">15,118</div><div class="metric-label">Active Opportunities</div></div>
+      <div class="metric-card"><div class="metric-value">$164.7M</div><div class="metric-label">Pipeline Value</div></div>
+      <div class="metric-card"><div class="metric-value">25</div><div class="metric-label">AI Agents</div></div>
+      <div class="metric-card"><div class="metric-value">150+</div><div class="metric-label">REST API Endpoints</div></div>
+      <div class="metric-card"><div class="metric-value">17,900</div><div class="metric-label">Frontend SPA Lines</div></div>
+      <div class="metric-card"><div class="metric-value">13/14</div><div class="metric-label">v7 Flags Active</div></div>
+    </div>
+    <div class="flow-section">
+      <h3>System Identity</h3>
+      <table class="pipeline-table">
+        <tr><td style="color:#C8A97E;font-weight:600;width:200px">System Name</td><td>APEX CRM v7</td></tr>
+        <tr><td style="color:#C8A97E;font-weight:600">Operator</td><td>Fareed - Head of Corporate Events & Outbound Sales</td></tr>
+        <tr><td style="color:#C8A97E;font-weight:600">Organization</td><td>Barsys</td></tr>
+        <tr><td style="color:#C8A97E;font-weight:600">Product</td><td>Barsys 360 AI Cocktail Machine</td></tr>
+        <tr><td style="color:#C8A97E;font-weight:600">Market</td><td>Corporate events, team celebrations, client entertainment, holiday parties</td></tr>
+        <tr><td style="color:#C8A97E;font-weight:600">Geography</td><td>NYC (primary), expanding to Chicago, SF, Boston, LA</td></tr>
+        <tr><td style="color:#C8A97E;font-weight:600">Stack</td><td>Python 3 + SQLite + HTML Single-Page Application</td></tr>
+        <tr><td style="color:#C8A97E;font-weight:600">AI Engine</td><td>Anthropic Claude (Sonnet + Haiku)</td></tr>
+        <tr><td style="color:#C8A97E;font-weight:600">Email</td><td>Gmail SMTP with open/click tracking, A/B testing</td></tr>
+        <tr><td style="color:#C8A97E;font-weight:600">Calendar</td><td>Google Calendar OAuth bidirectional sync</td></tr>
+        <tr><td style="color:#C8A97E;font-weight:600">Scheduler</td><td>Autonomous 24/7 daemon with 14 scheduled jobs</td></tr>
+        <tr><td style="color:#C8A97E;font-weight:600">Server</td><td>localhost:8791</td></tr>
+      </table>
+    </div>
+    <div class="flow-section">
+      <h3>Seven-Version Evolution</h3>
+      ${makeFlowSteps([
+        {title:'v1',desc:'Basic contact list'},
+        {title:'v2',desc:'Email sequences'},
+        {title:'v3',desc:'AI scoring'},
+        {title:'v4',desc:'Campaign automation'},
+        {title:'v5',desc:'LinkedIn + Market Intel'},
+        {title:'v6',desc:'Company Universe (10K+)'},
+        {title:'v7',desc:'14 feature flags, autonomous engine'},
+      ])}
+    </div>`;
+}
+
+function renderArchitecture(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Architecture Overview</h2>
+      <p>Monolithic REST API server using Python's http.server with ThreadingHTTPServer on port 8791. Serves both API endpoints and the static frontend SPA. SQLite with WAL mode, Bearer token auth, structured JSON logging, and a built-in daemon scheduler.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Server Architecture</h3>
+      <ul class="detail-list">
+        <li>Framework: Python http.server.BaseHTTPRequestHandler with threading</li>
+        <li>Database: SQLite with WAL mode (FUSE-aware sync to /tmp)</li>
+        <li>Authentication: Bearer token (session-based), localhost bypass for local</li>
+        <li>Logging: Structured JSON with rotation, performance metrics, audit trail</li>
+        <li>Scheduler: Built-in daemon thread with 14 scheduled jobs</li>
+        <li>Workers: Configurable thread count (default 4) via CRM_WORKERS env var</li>
+      </ul>
+    </div>
+    <div class="flow-section">
+      <h3>Module Architecture (15 API + 5 Infrastructure = ~21,000 Lines)</h3>
+      <table class="pipeline-table">
+        <thead><tr><th>Module</th><th>Lines</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>main.py</td><td>4,408</td><td>Core server, routing, lead/pipeline/analytics endpoints</td></tr>
+          <tr><td>api_market_intel.py</td><td>1,645</td><td>Market intelligence, signals, trends, company intel</td></tr>
+          <tr><td>api_reports.py</td><td>1,224</td><td>10 report types, pipeline snapshots, exports</td></tr>
+          <tr><td>api_sequences.py</td><td>1,174</td><td>Email sequence builder, enrollment, auto-advance</td></tr>
+          <tr><td>api_calendar.py</td><td>1,168</td><td>Google Calendar sync, meeting prep, conflict resolution</td></tr>
+          <tr><td>api_linkedin.py</td><td>1,079</td><td>LinkedIn prospecting, searches, actions, enrichment</td></tr>
+          <tr><td>db.py</td><td>1,041</td><td>Database init, schema management, FUSE sync, audit</td></tr>
+          <tr><td>api_ai.py</td><td>935</td><td>AI scoring engine, recommendations, draft generation</td></tr>
+          <tr><td>scheduler.py</td><td>929</td><td>24/7 autonomous scheduler, 14 jobs, business hours gating</td></tr>
+          <tr><td>notifications.py</td><td>789</td><td>Multi-channel notifications (in-app, desktop, email)</td></tr>
+          <tr><td>api_eod_report.py</td><td>789</td><td>End-of-day PDF report generation and email delivery</td></tr>
+          <tr><td>api_bounce_enricher.py</td><td>750</td><td>Bounce detection, IMAP polling, email re-enrichment</td></tr>
+          <tr><td>api_email.py</td><td>748</td><td>SMTP sending, tracking pixels, bulk email, reply polling</td></tr>
+          <tr><td>api_personalizer.py</td><td>607</td><td>Claude-powered hyper-personalized email generation</td></tr>
+          <tr><td>api_pan.py</td><td>505</td><td>Autonomous lead sourcing via Serper + Hunter.io</td></tr>
+          <tr><td>api_users.py</td><td>473</td><td>User management, RBAC, session authentication</td></tr>
+          <tr><td>api_automation.py</td><td>455</td><td>Rule-based workflow automation with DLQ</td></tr>
+          <tr><td>api_campaigns.py</td><td>420</td><td>Campaign management, recipients, multi-step sequences</td></tr>
+          <tr><td>api_email_drafts.py</td><td>398</td><td>Hermes draft system, A/B testing, open/click tracking</td></tr>
+          <tr><td>api_webhooks.py</td><td>393</td><td>Webhook CRUD, incoming processing, field mapping</td></tr>
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function renderDataModels(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Data Models & Database Schema</h2>
+      <p>25+ tables organized into core entities, engagement tracking, AI/intelligence, operations, and v7 extensions.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Core Entity Tables</h3>
+      <div class="card">
+        <span class="label label-system">Primary Table</span>
+        <h4>contacts</h4>
+        <p>Central record for every prospect. Fields: id, master_id, account_id, first_name, last_name, email, phone, title, company, linkedin_url, status, reply_status, outcome, pipeline_status, lead_score, touch_count, open_count, meeting_booked, meeting_date, created_at, updated_at, last_contacted, next_touch_date.</p>
+        <p style="color:#7C6DF5;margin-top:8px">v7 additions: thread_id, persona_group, seniority, email_verification_status, deliverability, contact_score</p>
+      </div>
+      <div class="card">
+        <span class="label label-system">Company Level</span>
+        <h4>accounts</h4>
+        <p>Firmographic data: id, name, company_domain, industry, industry_wave, account_status (queued/active), account_queue_priority, account_score, nyc_office, employee_count, office_location, website, linkedin_company_url, relationship_warmth, last_signal_date, signals_summary, estimated_event_budget_usd, event_budget_tier, event_likelihood, company_universe flag.</p>
+      </div>
+      <div class="card">
+        <span class="label label-system">Pipeline Deals</span>
+        <h4>opportunities</h4>
+        <p>Deal records: id, account_id, primary_contact_id, owner, stage (10 stages: new_lead through closed_won/closed_lost), amount_estimate, probability, status, close_date, created_at, updated_at.</p>
+      </div>
+      <div class="card">
+        <span class="label label-system">Audit Trail</span>
+        <h4>activities</h4>
+        <p>Every interaction: id, contact_id, opportunity_id, type (email_sent, lead_created, stage_change, enriched, booking_request, referral, note), subject, body, direction, source, created_at.</p>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>AI & Intelligence Tables</h3>
+      <div class="agent-grid">
+        <div class="card"><h4>ai_scores</h4><p>Risk and probability scoring per contact. Score types: risk, close_probability, engagement_level. Cached 1 hour, refreshable on demand.</p></div>
+        <div class="card"><h4>ai_recommendations</h4><p>Next-best-action suggestions. Types: follow_up, objection, meeting_prep, etc. Priority-based, max 3 per contact. Accept/reject workflow.</p></div>
+        <div class="card"><h4>ai_drafts</h4><p>AI-generated email templates. Types: follow_up, initial, breakup, objection_response, meeting_recap, no_response_bump, proposal_intro.</p></div>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>Engagement & Outreach Tables</h3>
+      <div class="agent-grid">
+        <div class="card"><h4>email_drafts</h4><p>Hermes A/B testing drafts. Subject A/B variants, tracking tokens, open/click counts, unsubscribe tracking. Also stores AI personalizer drafts.</p></div>
+        <div class="card"><h4>campaigns + campaign_recipients</h4><p>Multi-step email campaigns with target filters, recipient tracking, sent/open/reply/bounce counts.</p></div>
+        <div class="card"><h4>sequences + steps + enrollments + events</h4><p>Automated follow-up cadences with delay_days, step_type (email/call/linkedin/task), conditions, and event logging.</p></div>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>Additional Tables</h3>
+      <div class="agent-grid">
+        <div class="card"><h4>meetings</h4><p>Meeting records with calendar sync, status, outcome tracking.</p></div>
+        <div class="card"><h4>proposals</h4><p>Generated sales collateral with tier, pricing, personalization.</p></div>
+        <div class="card"><h4>webhooks + webhook_log</h4><p>External integrations with token auth, field mapping, rate limiting (60/min).</p></div>
+        <div class="card"><h4>notifications</h4><p>Multi-channel alerts (in-app, desktop, email) with priority levels.</p></div>
+        <div class="card"><h4>users + sessions</h4><p>RBAC with admin/manager/agent roles.</p></div>
+        <div class="card"><h4>automation_rules + automation_dlq</h4><p>Rule-based triggers with dead-letter queue.</p></div>
+        <div class="card"><h4>market_signals + alerts + intelligence + trends</h4><p>Full market intelligence system.</p></div>
+        <div class="card"><h4>linkedin_profiles + actions + searches</h4><p>LinkedIn prospecting pipeline.</p></div>
+        <div class="card"><h4>bounce_enrichment_queue</h4><p>Bounced email recovery pipeline.</p></div>
+        <div class="card"><h4>pipeline_snapshots</h4><p>Daily pipeline trending.</p></div>
+        <div class="card"><h4>feature_flags</h4><p>v7 feature toggles (14 flags).</p></div>
+        <div class="card"><h4>account_send_log</h4><p>Per-account send rate limiting.</p></div>
+      </div>
+    </div>`;
+}
+
+function renderICP(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Ideal Customer Profile & Scoring</h2>
+      <p>Multi-factor scoring system specifically tuned for selling the Barsys 360 AI Cocktail Machine to NYC companies for corporate events.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Target Decision-Maker Title Tiers</h3>
+      <div class="score-tier"><div class="pts">95</div><div class="info"><h5>Tier 1</h5><p>Head of People, VP People, Chief People Officer, Directors of HR/People/Culture/Events</p></div></div>
+      <div class="score-tier"><div class="pts">80</div><div class="info"><h5>Tier 2</h5><p>People Ops, HR Director/Manager, Office Manager/Ops, Workplace Manager, Employee Experience</p></div></div>
+      <div class="score-tier"><div class="pts">65</div><div class="info"><h5>Tier 3</h5><p>Executive Assistant, Administrative Director, Operations roles, Facilities Manager, Chief of Staff</p></div></div>
+      <div class="score-tier"><div class="pts">50</div><div class="info"><h5>Tier 4</h5><p>C-suite (CEO/COO/CFO/CTO/President), Managing Director/Partner, VP Operations</p></div></div>
+      <div class="score-tier"><div class="pts">15-20</div><div class="info"><h5>Default</h5><p>No title match or irrelevant</p></div></div>
+    </div>
+    <div class="flow-section">
+      <h3>Company Criteria</h3>
+      <ul class="detail-list">
+        <li>Location: NYC metro area (Manhattan +20pts, other boroughs +15pts, suburbs +10pts)</li>
+        <li>Size: 50-5,000 employees (sweet spot 100-1,000 for +25pts)</li>
+        <li>Type: B2B and B2C companies with office presence</li>
+        <li>Disqualified: Fully remote, under 20 employees, active bankruptcy/layoffs, competitors</li>
+      </ul>
+    </div>
+    <div class="flow-section">
+      <h3>ICP Scoring Formula (Max 100 Points)</h3>
+      <table class="pipeline-table">
+        <thead><tr><th>Factor</th><th>Points</th><th>Details</th></tr></thead>
+        <tbody>
+          <tr><td>Title Match</td><td>0-40</td><td>Tier 1=40, Tier 2=30, Tier 3=20, C-Level bonus +20</td></tr>
+          <tr><td>Company Size</td><td>0-25</td><td>50-250 emp=25, 20-50=15, 251-1000=15</td></tr>
+          <tr><td>Industry</td><td>0-15</td><td>Priority (Tech, VC, Finance, Consulting)=15, Secondary (Insurance, Healthcare)=8</td></tr>
+          <tr><td>Signal Bonuses</td><td>0-35+</td><td>Funding +15, Hiring +15, Expansion +12, Culture +10, Client entertainment +8</td></tr>
+          <tr><td>Contact Quality</td><td>0-20</td><td>Verified email +10, Likely email +5, LinkedIn URL +5</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="flow-section">
+      <h3>Lead Classification Thresholds</h3>
+      <div class="metrics-grid">
+        <div class="metric-card" style="border-color:rgba(239,68,68,0.3)"><div class="metric-value" style="color:#EF4444">70+</div><div class="metric-label">Hot Lead - Priority Outreach</div></div>
+        <div class="metric-card" style="border-color:rgba(251,191,36,0.3)"><div class="metric-value" style="color:#FBBF24">45-69</div><div class="metric-label">Warm Lead - Standard Sequence</div></div>
+        <div class="metric-card" style="border-color:rgba(156,163,175,0.3)"><div class="metric-value" style="color:#9CA3AF">20-44</div><div class="metric-label">Cold Lead - Lower Priority</div></div>
+        <div class="metric-card" style="border-color:rgba(107,114,128,0.3)"><div class="metric-value" style="color:#6B7280">&lt;20</div><div class="metric-label">Disqualified - Excluded</div></div>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>Risk Score (0-100)</h3>
+      <table class="pipeline-table">
+        <thead><tr><th>Factor</th><th>Weight</th><th>Scoring</th></tr></thead>
+        <tbody>
+          <tr><td>Days Idle</td><td>30%</td><td>&lt;3 days=0, 3-7=20, 7-14=50, 14-30=80, 30+=100</td></tr>
+          <tr><td>Reply Status</td><td>25%</td><td>Positive=0, Question/OOO=30, Negative=80, Bounced=100, No reply=60</td></tr>
+          <tr><td>Touch Count</td><td>20%</td><td>0 touches=100, 1-2=60, 3-5=30, 5+=10</td></tr>
+          <tr><td>Email Opens</td><td>15%</td><td>0 opens=100, 1-2=60, 3+=20</td></tr>
+          <tr><td>Meeting Booked</td><td>10%</td><td>Yes=0, No=70</td></tr>
+        </tbody>
+      </table>
+      <div class="metrics-grid" style="margin-top:12px">
+        <div class="metric-card" style="border-color:rgba(239,68,68,0.3)"><div class="metric-value" style="color:#EF4444">60+</div><div class="metric-label">HIGH Risk</div></div>
+        <div class="metric-card" style="border-color:rgba(251,191,36,0.3)"><div class="metric-value" style="color:#FBBF24">35-59</div><div class="metric-label">MEDIUM Risk</div></div>
+        <div class="metric-card" style="border-color:rgba(34,197,94,0.3)"><div class="metric-value" style="color:#22C55E">&lt;35</div><div class="metric-label">LOW Risk</div></div>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>Close Probability (0-99)</h3>
+      <table class="pipeline-table">
+        <thead><tr><th>Stage</th><th>Base %</th><th>Modifiers</th></tr></thead>
+        <tbody>
+          <tr><td>new_lead</td><td>10%</td><td rowspan="7" style="vertical-align:middle">+15 meeting booked, +10 positive reply, -20 no reply + 14+ days idle, +5 per 3 opens (cap +15), -10 negative/objection</td></tr>
+          <tr><td>contacted</td><td>25%</td></tr>
+          <tr><td>replied</td><td>45%</td></tr>
+          <tr><td>sales_cycle</td><td>60%</td></tr>
+          <tr><td>meeting_booked</td><td>70%</td></tr>
+          <tr><td>proposal_sent</td><td>75%</td></tr>
+          <tr><td>negotiation</td><td>85%</td></tr>
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function renderWave1(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Wave 1: Core Outreach Pipeline (Agents 1-12)</h2>
+      <p>The primary lead-to-outreach pipeline, from market scanning through first-touch email delivery.</p>
+    </div>
+    ${makeFlowSteps([
+      {title:'Zeus',desc:'Market Intel Scout'},
+      {title:'Atlas',desc:'Account Scorer'},
+      {title:'Titan',desc:'Event Buyer ID'},
+      {title:'Pan',desc:'Lead Discovery'},
+      {title:'Athena',desc:'Data Enrichment'},
+      {title:'Mercury',desc:'LinkedIn Hooks'},
+    ])}
+    ${makeFlowSteps([
+      {title:'Vulcan',desc:'Event Prediction'},
+      {title:'Apollo',desc:'ICP Scoring'},
+      {title:'Nemesis',desc:'Data Hygiene'},
+      {title:'Iris',desc:'Deliverability'},
+      {title:'Hermes',desc:'First-Touch'},
+      {title:'Ares',desc:'Follow-ups'},
+    ])}
+    <div class="flow-section" style="margin-top:24px">
+      <h3>All 12 Agents</h3>
+      <div class="agent-grid">
+        ${makeAgentCard('Zeus','intel','Market Intelligence Scout','Scans NYC companies for corporate event signals (funding, hiring, expansion, happy hours). 211 queries across 5 cities. Signals above 0.75 relevance auto-create market_alerts.','Daily',1,'Atlas, Pan, Athena')}
+        ${makeAgentCard('Atlas','atlas','Strategic Accounts Scorer','Scores and tiers target accounts (T1/T2/T3) based on firmographic data and signal strength. T1 accounts get priority queue placement and faster outreach cadence.','Daily',1,'Pan, Apollo')}
+        ${makeAgentCard('Titan','titan','Event Buyer Identification','Identifies frequent corporate event buyers via event history, social signals, venue partnerships. Companies with 4+ events/year get Frequent Event Buyer tag (+12 ICP bonus).','Daily',1,'Apollo, Vulcan')}
+        ${makeAgentCard('Pan','scout','Lead Discovery','Autonomous lead sourcing rotating through 211 multi-city queries via Serper + Hunter.io. Filters by title quality, deduplicates, enriches emails. Up to 15 net-new leads per run.','Every 4 hrs',1,'Athena, Apollo')}
+        ${makeAgentCard('Athena','data_enricher','Data Enrichment','Verifies emails, tags persona tiers, enriches contact and account data. Hunter/Apollo for email verification (50+ confidence). Assigns persona_group and seniority.','Every 15 min',1,'Apollo, Iris')}
+        ${makeAgentCard('Mercury','mercury','LinkedIn Hooks Extraction','Extracts personalization hooks from LinkedIn profiles. Scrapes headline, industry, location, connections for email customization.','Every 6 hrs',1,'Hermes, Personalizer')}
+        ${makeAgentCard('Vulcan','vulcan','Event Likelihood Prediction','Predicts event probability (0-100%) per account using historical data, signals, seasonal patterns, industry benchmarks. Accounts 70+ get +15 ICP bonus.','Daily',1,'Apollo, Dionysus')}
+        ${makeAgentCard('Apollo','enricher','ICP Scoring Engine','Scores every lead 0-100 using weighted ICP formula. Produces ICP Score, Risk Score, and Close Probability. Batch of 500 contacts per run.','Every 6 hrs',1,'Hermes, Ares, Nemesis')}
+        ${makeAgentCard('Nemesis','nemesis','Data Hygiene','Deduplication, ICP enforcement, data quality, self-healing pipeline. Merges duplicate emails, validates pipeline stages, repairs orphaned records.','Every 12 hrs',1,'All agents')}
+        ${makeAgentCard('Iris','iris','Email Deliverability','Pre-send risk assessment, domain reputation checking, bounce prediction. Checks SPF/DKIM/DMARC, validates MX records, flags high-risk emails.','Every 12 hrs',1,'Hermes, Bounce Enricher')}
+        ${makeAgentCard('Hermes','outreach','First-Touch Outreach','Sends persona-specific cold emails. Up to 50 per run, 400/day limit, 3-second delay. Tracking pixels, A/B variants, SMTP delivery. Business hours only (8:30-5:30 ET).','Every 30 min',1,'Ares, Prometheus')}
+        ${makeAgentCard('Ares','followup','Cadence Follow-ups','4-step follow-up cadence with condition-based advancement. Bounce guard, template rendering, merge fields. 5 objection playbooks (Budget, Timing, Vendor, Policy, Remote).','Every 4 hrs',1,'Hermes, Prometheus')}
+      </div>
+    </div>`;
+}
+
+function renderWave2(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Wave 2: Sales Cycle Agents (13-17)</h2>
+      <p>Handle the critical middle of the funnel, from reply classification through deal closure.</p>
+    </div>
+    ${makeFlowSteps([
+      {title:'Prometheus',desc:'Reply Classification'},
+      {title:'Echo',desc:'Conversation Intel'},
+      {title:'Kratos',desc:'Meeting Booking'},
+      {title:'Nike',desc:'SLA Enforcement'},
+      {title:'Dionysus',desc:'Closing & Proposals'},
+    ])}
+    <div class="flow-section" style="margin-top:24px">
+      <h3>All 5 Agents</h3>
+      <div class="agent-grid">
+        ${makeAgentCard('Prometheus','classifier','Reply Classification','Categorizes inbound replies: POSITIVE, QUESTION, OBJECTION, UNSUBSCRIBE, OOO, BOUNCE. IMAP polling, contact matching, sequence pausing, Fareed alerts for priority replies.','Every 2 hrs',2,'Echo, Kratos, Ares')}
+        ${makeAgentCard('Echo','echo','Conversation Intelligence','Deep reply analysis: intent, sentiment, buying signals, objection patterns. Generates context-aware response drafts. Identifies hidden objections and stakeholder involvement.','Every 2 hrs',2,'Kratos, Dionysus')}
+        ${makeAgentCard('Kratos','booker','Meeting Booking','Converts positive replies to scheduled meetings. Calendar availability check (7-day lookahead), Google Calendar push, meeting prep briefs. Full outreach history + company research + case studies.','Every 2 hrs',2,'Calendar, Dionysus')}
+        ${makeAgentCard('Nike','nike','SLA Enforcement','Monitors stage aging violations. REPLIED >14 days, SALES_CYCLE >21 days, PROPOSAL_SENT >14 days. Auto-tags stale leads, moves stalled deals to STALLED status.','Every 4 hrs',2,'Notifications, Automation')}
+        ${makeAgentCard('Dionysus','closer','Closing & Proposals','Tier matching (Classic/Signature/Reserve), pricing calculation, case study selection, one-pager HTML generation. Queue for Fareed review before sending.','Daily',2,'Hera, Pipeline')}
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>Reply Priority Matrix</h3>
+      <table class="pipeline-table">
+        <thead><tr><th>Reply Type</th><th>Priority</th><th>Response SLA</th></tr></thead>
+        <tbody>
+          <tr><td>POSITIVE</td><td style="color:#EF4444">URGENT</td><td>Within 2 hours</td></tr>
+          <tr><td>QUESTION</td><td style="color:#FB923C">HIGH</td><td>Within 4 hours</td></tr>
+          <tr><td>OBJECTION</td><td style="color:#FBBF24">MEDIUM</td><td>Within 24 hours</td></tr>
+          <tr><td>UNSUBSCRIBE</td><td style="color:#EF4444">IMMEDIATE</td><td>Automated removal</td></tr>
+          <tr><td>OOO</td><td style="color:#9CA3AF">LOW</td><td>Auto-schedule resume</td></tr>
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function renderWave3(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Wave 3: Intelligence & Foundation (Agents 18-20)</h2>
+      <p>Deep scoring, post-close lifecycle, and account expansion agents.</p>
+    </div>
+    <div class="agent-grid">
+      ${makeAgentCard('Oracle','oracle','Deal Probability Scoring','Predicts close likelihood (0-100%) per opportunity. Base probability by stage + engagement modifiers. Multi-factor analysis with confidence levels.','Every 6 hrs',3,'')}
+      ${makeAgentCard('Hera','success','Post-Close & Referrals','Customer lifecycle after close: Customer Success sequence enrollment, post-event follow-up, annual upsell sequence, referral opportunities, case study candidates.','Weekly',3,'')}
+      ${makeAgentCard('Odin','odin','Account Expansion','Identifies expansion revenue: additional departments, seasonal opportunities, tier upgrades (Classic->Signature->Reserve), recurring event scheduling.','Weekly',3,'')}
+    </div>`;
+}
+
+function renderWave4(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Wave 4: Learning & Optimization (Agents 21-22)</h2>
+      <p>Continuous improvement through pattern analysis and A/B testing.</p>
+    </div>
+    <div class="agent-grid">
+      ${makeAgentCard('Hephaestus','learner','Learning Loop','Analyzes conversion patterns across the funnel: best industries, most responsive titles, optimal send times, effective messaging angles. Feeds into Apollo scoring and Hermes templates.','Weekly',4,'Apollo, Hermes')}
+      ${makeAgentCard('Odysseus','optimizer','A/B Testing','Continuous message optimization. Requires 5+ sends per variant. Winner at >2% open rate difference. Current winner: Variant A (3.0% reply rate, 303 sends). Auto-promotes winners, generates challengers.','Weekly (Mon 6AM)',4,'')}
+    </div>`;
+}
+
+function renderWave5(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Wave 5: Pipeline Operations (Agents 23-25)</h2>
+      <p>Pipeline health monitoring, revenue forecasting, and capacity management.</p>
+    </div>
+    <div class="agent-grid">
+      ${makeAgentCard('Argus','argus','Pipeline Health','Monitors conversion rates, velocity, bottlenecks. Daily pipeline snapshots, stage-to-stage conversion, velocity metrics. Alerts on >10% conversion drops and velocity slowdowns.','Every 6 hrs',5,'')}
+      ${makeAgentCard('Cronus','cronus','Revenue Forecast','Predicts monthly/quarterly revenue: sum(amount_estimate x probability). Historical accuracy adjustment. Gap analysis against $1M annual target.','Daily',5,'')}
+      ${makeAgentCard('Hestia','hestia','Capacity Management','Monitors email queue depth, API rate limits (Serper, Hunter, Anthropic), database stats, backup status, scheduler success rates. Alerts at critical thresholds.','Every 12 hrs',5,'')}
+    </div>`;
+}
+
+function renderLeadMgmt(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Lead Management User Flows</h2>
+      <p>Contacts enter the CRM through 7 channels, each triggering automatic enrichment and scoring.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Lead Creation Channels</h3>
+      <div class="agent-grid">
+        <div class="card"><span class="label label-api">POST /api/leads</span><h4>Manual Entry</h4><p>Direct creation with first_name, last_name, email, phone, title, company, linkedin_url.</p></div>
+        <div class="card"><span class="label label-api">POST /api/import/csv-bulk</span><h4>CSV Import</h4><p>Bulk import from remastered.csv with all contact fields.</p></div>
+        <div class="card"><span class="label label-agent">Autonomous</span><h4>Pan Agent</h4><p>Auto-sourcing via Serper + Hunter, inserts directly into CRM.</p></div>
+        <div class="card"><span class="label label-api">POST /api/webhooks/incoming/{token}</span><h4>Webhook</h4><p>External integrations with field mapping.</p></div>
+        <div class="card"><span class="label label-api">POST /api/linkedin/results/{id}/convert</span><h4>LinkedIn Conversion</h4><p>Convert LinkedIn search results to CRM contacts.</p></div>
+        <div class="card"><span class="label label-api">POST /api/intel/process</span><h4>Market Intel</h4><p>Convert high-relevance market signals to leads.</p></div>
+        <div class="card"><span class="label label-api">POST /api/meetings/book-request</span><h4>Public Booking</h4><p>Auto-creates contact from meeting booking requests.</p></div>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>Auto-Actions on Lead Creation</h3>
+      ${makeFlowSteps([
+        {title:'Create Account',desc:'If company provided'},
+        {title:'Create Opportunity',desc:'Auto-linked deal'},
+        {title:'Enroll Sequence',desc:'Industry-specific'},
+        {title:'Compute ICP',desc:'Apollo scoring'},
+        {title:'Generate Recs',desc:'Next-best-action'},
+      ])}
+      <div class="card" style="margin-top:16px">
+        <h4>Industry-Specific Sequence Routing</h4>
+        <p>Finance contacts auto-enroll in Sequence 6, Tech in Sequence 7, Media in Sequence 8, all others in Sequence 1 (default 5-touch Barsys sequence).</p>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>Contact Merge & Deduplication</h3>
+      <div class="card">
+        <span class="label label-api">POST /api/leads/merge</span>
+        <h4>Merge Flow</h4>
+        <p>Accepts primary_id and secondary_id. Reassigns all activities, meetings, emails, and sequence enrollments from secondary to primary. Secondary contact is soft-deleted. Duplicate detection via GET /api/leads/duplicates groups by email address.</p>
+      </div>
+    </div>`;
+}
+
+function renderPipeline(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>10-Stage Pipeline</h2>
+      <p>Complete pipeline from new lead discovery through deal closure, with auto-actions at every stage.</p>
+    </div>
+    ${makeFlowSteps([
+      {title:'NEW_LEAD',desc:'Created'},
+      {title:'CONTACTED',desc:'First email'},
+      {title:'REPLIED',desc:'Reply detected'},
+      {title:'SALES_CYCLE',desc:'Active discussion'},
+      {title:'MEETING_BOOKED',desc:'Calendar confirmed'},
+    ])}
+    ${makeFlowSteps([
+      {title:'PROPOSAL_SENT',desc:'Formal proposal'},
+      {title:'NEGOTIATION',desc:'Terms discussion'},
+      {title:'CLOSED_WON',desc:'Deal won'},
+      {title:'CLOSED_LOST',desc:'Deal lost'},
+      {title:'STALLED',desc:'Gone cold'},
+    ])}
+    <div class="flow-section" style="margin-top:24px">
+      <h3>Stage Details</h3>
+      <table class="pipeline-table">
+        <thead><tr><th>Stage</th><th>Entry Trigger</th><th>Exit Trigger</th><th>Auto-Actions</th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:600;color:#FFF">NEW_LEAD</td><td>Contact created with verified email</td><td>First outreach sent, or ICP &lt;20</td><td>Calculate ICP score, queue verification, queue enrichment</td></tr>
+          <tr><td style="font-weight:600;color:#FFF">CONTACTED</td><td>First email sent (Touch 1)</td><td>Reply, bounce, Touch 5 no reply, unsubscribe</td><td>Advance through 5-touch sequence, track opens/clicks, monitor replies every 15 min</td></tr>
+          <tr><td style="font-weight:600;color:#FFF">REPLIED</td><td>Any reply detected</td><td>Meeting scheduled, decline, 14 days no follow-up</td><td>Classify reply, alert Fareed, pause sequence, generate response draft</td></tr>
+          <tr><td style="font-weight:600;color:#FFF">SALES_CYCLE</td><td>Meeting booked or active discussion</td><td>Proposal sent, 21 days silence, explicit decline</td><td>Generate meeting prep brief, track touchpoints, 7-day idle alert</td></tr>
+          <tr><td style="font-weight:600;color:#FFF">MEETING_BOOKED</td><td>Calendar event confirmed</td><td>Meeting completed</td><td>Push to Google Calendar, prep brief 1 hour before</td></tr>
+          <tr><td style="font-weight:600;color:#FFF">PROPOSAL_SENT</td><td>Formal proposal delivered</td><td>Accept, decline, 14 days no response</td><td>Track opens/views, follow-up Day 3, 7, 14</td></tr>
+          <tr><td style="font-weight:600;color:#FFF">NEGOTIATION</td><td>Active pricing/terms discussion</td><td>Agreement or decline</td><td>Track engagement, alert on stall</td></tr>
+          <tr><td style="font-weight:600;color:#FFF">CLOSED_WON</td><td>Verbal/written acceptance</td><td>N/A (terminal)</td><td>Log deal value, Customer Success seq, post-event follow-up</td></tr>
+          <tr><td style="font-weight:600;color:#FFF">CLOSED_LOST</td><td>Explicit rejection or prolonged silence</td><td>N/A (terminal)</td><td>Log loss reason, queue for 90-day re-engagement</td></tr>
+          <tr><td style="font-weight:600;color:#FFF">STALLED</td><td>Touch 5 no reply, or conversation cold</td><td>Re-engagement reply, 90 days to archive</td><td>Flag for review, test alt messaging, lower send priority</td></tr>
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function renderEmail(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Email System & Hermes Outreach Engine</h2>
+      <p>SMTP configuration, single/bulk sending, open/click tracking, reply detection via IMAP polling, A/B testing, and unsubscribe handling.</p>
+    </div>
+    <div class="flow-section">
+      <h3>SMTP Configuration</h3>
+      <div class="card">
+        <p>Environment variables: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM or .ai_config.json. Supports Gmail, Outlook, Yahoo, SendGrid presets. Testable via POST /api/email/test.</p>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>Email Sending Flows</h3>
+      <div class="agent-grid">
+        <div class="card"><span class="label label-api">POST /api/email/send</span><h4>Single Send</h4><p>Send to one contact with subject/body. Creates MIMEMultipart, logs activity, increments touch_count.</p></div>
+        <div class="card"><span class="label label-api">POST /api/email/send-bulk</span><h4>Bulk Send</h4><p>Send to multiple contacts with merge fields: {{first_name}}, {{last_name}}, {{company}}, {{title}}. Single SMTP connection.</p></div>
+        <div class="card"><span class="label label-api">POST /api/email/drafts/{id}/send-smtp</span><h4>Hermes Draft Send</h4><p>Sends A/B variant (subject_a or subject_b), updates draft status, tracks variant.</p></div>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>Open & Click Tracking</h3>
+      ${makeFlowSteps([
+        {title:'Email Sent',desc:'With tracking pixel'},
+        {title:'Recipient Opens',desc:'1x1 transparent GIF fires'},
+        {title:'GET /track/open',desc:'Records open event'},
+        {title:'Link Clicked',desc:'Wrapped redirect URL'},
+        {title:'GET /track/click',desc:'Logs click, 302 redirect'},
+      ])}
+    </div>
+    <div class="flow-section">
+      <h3>A/B Testing</h3>
+      <div class="card">
+        <h4>Subject Line A/B Testing</h4>
+        <p>Each draft supports subject_a and subject_b variants. Winner declared at 5+ sends per variant and >2% open rate difference. Current winner: Variant A (3.0% reply rate, 303 sends). GET /api/email/ab-stats for results.</p>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>Reply & Bounce Detection (IMAP)</h3>
+      ${makeFlowSteps([
+        {title:'IMAP Poll',desc:'Every 5 min'},
+        {title:'Detect Type',desc:'Reply vs Bounce vs OOO'},
+        {title:'Match Contact',desc:'Sender to database'},
+        {title:'Update Status',desc:'reply_status field'},
+        {title:'Route Action',desc:'Alert / Pause / Enrich'},
+      ])}
+    </div>
+    <div class="flow-section">
+      <h3>Unsubscribe Flow</h3>
+      ${makeFlowSteps([
+        {title:'Click Unsub Link',desc:'GET /api/unsubscribe'},
+        {title:'Mark Draft',desc:'unsubscribed=true'},
+        {title:'Tag Contact',desc:'Do Not Contact'},
+        {title:'Remove Sequences',desc:'All active enrollments'},
+        {title:'Confirmation',desc:'Styled HTML page'},
+      ])}
+    </div>`;
+}
+
+function renderCampaigns(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Campaign Management User Flows</h2>
+      <p>Multi-step email initiatives with recipient management, sequence steps, and engagement tracking.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Campaign Lifecycle</h3>
+      ${makeFlowSteps([
+        {title:'Create',desc:'POST /api/campaigns'},
+        {title:'Add Recipients',desc:'Manual or auto-filter'},
+        {title:'Add Steps',desc:'Sequence with delays'},
+        {title:'Launch',desc:'Requires 1+ recipients'},
+        {title:'Track Events',desc:'Opens, replies, bounces'},
+        {title:'Pause/Complete',desc:'Control lifecycle'},
+      ])}
+    </div>
+    <div class="flow-section">
+      <h3>Campaign API Endpoints</h3>
+      <table class="pipeline-table">
+        <thead><tr><th>Action</th><th>Endpoint</th><th>Details</th></tr></thead>
+        <tbody>
+          <tr><td>Create</td><td>POST /api/campaigns</td><td>name, type, subject/body templates, target_filter</td></tr>
+          <tr><td>Manual Recipients</td><td>POST /api/campaigns/{id}/recipients</td><td>contact_ids[] array</td></tr>
+          <tr><td>Auto-Add</td><td>POST /api/campaigns/{id}/auto-add</td><td>Filter: stage, min_score, reply_status, tags, max_days_idle</td></tr>
+          <tr><td>Add Steps</td><td>POST /api/campaigns/{id}/sequence</td><td>step_number, delay_days, templates, condition</td></tr>
+          <tr><td>Launch</td><td>POST /api/campaigns/{id}/launch</td><td>Transitions to active (requires 1+ recipients)</td></tr>
+          <tr><td>Track Event</td><td>POST /api/campaigns/{id}/event</td><td>Record opens, replies, bounces per recipient</td></tr>
+          <tr><td>Pause</td><td>POST /api/campaigns/{id}/pause</td><td>Pause active campaign</td></tr>
+          <tr><td>Complete</td><td>POST /api/campaigns/{id}/complete</td><td>Mark campaign as completed</td></tr>
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function renderSequences(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Sequence Orchestration (Ares Engine)</h2>
+      <p>Automated follow-up sequences with the default 5-touch Barsys cadence.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Default 5-Touch Barsys Sequence</h3>
+      <table class="pipeline-table">
+        <thead><tr><th>Step</th><th>Day</th><th>Type</th><th>Subject</th><th>Condition</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>0</td><td>Intro</td><td>Elevate Your Corporate Events with Barsys</td><td>Always</td></tr>
+          <tr><td>2</td><td>3</td><td>Follow-up</td><td>Quick follow-up on corporate event</td><td>No reply</td></tr>
+          <tr><td>3</td><td>7</td><td>Value-add</td><td>How companies are transforming team events</td><td>No open</td></tr>
+          <tr><td>4</td><td>14</td><td>Proposal</td><td>Customized Barsys package</td><td>Always</td></tr>
+          <tr><td>5</td><td>21</td><td>Final</td><td>Last chance to book before calendar fills up</td><td>Always</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="flow-section">
+      <h3>Auto-Advance Logic (Every 10 Minutes)</h3>
+      ${makeFlowSteps([
+        {title:'Fetch Enrollments',desc:'auto_advance=1'},
+        {title:'Bounce Guard',desc:'Stop if bounced'},
+        {title:'Calculate send_at',desc:'base + delay_days'},
+        {title:'Check Condition',desc:'no_reply/no_open/etc'},
+        {title:'Render Templates',desc:'Merge fields'},
+        {title:'Create Draft',desc:'For Hermes to send'},
+      ])}
+    </div>
+    <div class="flow-section">
+      <h3>Industry-Specific Routing</h3>
+      <div class="metrics-grid">
+        <div class="metric-card"><div class="metric-value">Seq 6</div><div class="metric-label">Finance Contacts</div></div>
+        <div class="metric-card"><div class="metric-value">Seq 7</div><div class="metric-label">Tech Contacts</div></div>
+        <div class="metric-card"><div class="metric-value">Seq 8</div><div class="metric-label">Media Contacts</div></div>
+        <div class="metric-card"><div class="metric-value">Seq 1</div><div class="metric-label">All Others (Default)</div></div>
+      </div>
+    </div>`;
+}
+
+function renderAIScoring(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>AI Scoring, Recommendations & Draft Generation</h2>
+      <p>Three score types per contact, next-best-action recommendations, and AI-powered draft generation.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Three Score Types</h3>
+      <div class="metrics-grid">
+        <div class="metric-card" style="border-color:rgba(124,109,245,0.3)"><div class="metric-value" style="color:#7C6DF5">0-100</div><div class="metric-label">ICP Score (Title-Weighted)</div></div>
+        <div class="metric-card" style="border-color:rgba(239,68,68,0.3)"><div class="metric-value" style="color:#EF4444">0-100</div><div class="metric-label">Risk Score (Engagement-Weighted)</div></div>
+        <div class="metric-card" style="border-color:rgba(34,197,94,0.3)"><div class="metric-value" style="color:#22C55E">0-99</div><div class="metric-label">Close Probability (Stage-Based)</div></div>
+      </div>
+      <div class="card"><p>Scores cached in ai_scores with 1-hour TTL. Batch scoring processes up to 500 contacts per run (every 2 hours). Results include factors_json documenting each contributing factor and weight.</p></div>
+    </div>
+    <div class="flow-section">
+      <h3>Recommendation Engine (1-3 per contact)</h3>
+      <div class="agent-grid">
+        <div class="card"><h4>Initial Outreach</h4><p>Triggered for new leads without any touches.</p></div>
+        <div class="card"><h4>Follow-up</h4><p>No reply + 7+ days idle.</p></div>
+        <div class="card"><h4>Objection Handling</h4><p>Negative/objection reply received.</p></div>
+        <div class="card"><h4>Meeting Prep</h4><p>Meeting has been booked.</p></div>
+        <div class="card"><h4>Requalify</h4><p>High risk + 14+ days idle.</p></div>
+        <div class="card"><h4>Close</h4><p>Positive reply but no meeting yet.</p></div>
+        <div class="card"><h4>Channel Switch</h4><p>5+ touches without meeting, try LinkedIn/call.</p></div>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>AI Draft Generation</h3>
+      <div class="agent-grid">
+        <div class="card"><span class="label label-system">Mode 1</span><h4>Template-Based</h4><p>Merge fields for follow_up, objection_response, meeting_recap, no_response_bump, proposal_intro.</p></div>
+        <div class="card"><span class="label label-agent">Mode 2</span><h4>Claude-Powered</h4><p>claude-sonnet-4-5-20250929, 400 max tokens, full contact context. Falls back to templates if API unavailable.</p></div>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>Top Leads Analysis</h3>
+      <div class="card">
+        <span class="label label-api">GET /api/ai/top-leads</span>
+        <h4>Intelligent Lead Analysis</h4>
+        <p>Analyzes 5 highest-scoring leads using Claude Haiku. Returns recommendation, priority reason, and outreach angle per lead. Falls back to heuristic analysis if API unavailable.</p>
+      </div>
+    </div>`;
+}
+
+function renderPersonalizer(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Personalizer Engine (Claude-Powered)</h2>
+      <p>Researches each contact via web search, then uses Claude Haiku to generate hyper-personalized emails with venue-specific hooks.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Research Phase</h3>
+      ${makeFlowSteps([
+        {title:'Search 1',desc:'Company/venue news'},
+        {title:'No Results?',desc:'Expand search'},
+        {title:'Search 2',desc:'Events/expansion'},
+        {title:'Parse Results',desc:'Organic snippets'},
+        {title:'Feed to Claude',desc:'As context'},
+      ])}
+    </div>
+    <div class="flow-section">
+      <h3>Claude Personalization Output</h3>
+      <ul class="detail-list">
+        <li>Personalized subject line</li>
+        <li>1-2 sentence opening hook referencing venue-specific detail</li>
+        <li>3-4 sentence body with one pain point, one Barsys insight, one soft CTA</li>
+        <li>Single-phrase angle describing the pain point</li>
+      </ul>
+      <div class="card" style="margin-top:12px">
+        <h4>Pipeline-Aware Context</h4>
+        <p>Warm follow-up for positives, re-engagement for 3+ touches, strong first impression for cold leads. Context varies by reply_status and touch_count.</p>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>Batch Processing Segments</h3>
+      <table class="pipeline-table">
+        <thead><tr><th>Segment</th><th>Criteria</th><th>Priority</th></tr></thead>
+        <tbody>
+          <tr><td>best</td><td>lead_score >= 40, highest ICP, not personalized in 7 days</td><td>Highest</td></tr>
+          <tr><td>stale</td><td>3+ touches, no reply 14+ days</td><td>High</td></tr>
+          <tr><td>positive</td><td>Replied positively</td><td>High</td></tr>
+          <tr><td>all</td><td>Any unprocessed contact</td><td>Normal</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:12px;color:#888;margin-top:8px">Up to 30 contacts per batch, 0.3s delay between API calls. Daily run at 6:30 AM pre-generates drafts for best leads.</p>
+    </div>`;
+}
+
+function renderPan(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Pan Agent - Autonomous Lead Sourcing</h2>
+      <p>Server-side autonomous agent rotating through 211 multi-city search queries using Serper + Hunter.io.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Query Bank Strategy</h3>
+      <div class="card">
+        <p>40+ LinkedIn/web queries per city (NYC, Chicago, SF, Boston, LA) targeting 11 title categories across 11 industries. Topics: company culture, employee engagement, team events, happy hours, perks/benefits. Queries rotate via persistent cursor.</p>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>Quality Filtering</h3>
+      <div class="agent-grid">
+        <div class="card" style="border-color:rgba(34,197,94,0.3)">
+          <h4 style="color:#22C55E">Accepted Titles</h4>
+          <p>Head of People, VP People, HR Director, Director of People, People Operations, Office Manager, Workplace Experience, Chief of Staff, Culture Manager, Events Manager</p>
+        </div>
+        <div class="card" style="border-color:rgba(239,68,68,0.3)">
+          <h4 style="color:#EF4444">Rejected Titles</h4>
+          <p>Intern, Junior, Associate, Coordinator, Analyst, Recruiter, SDR, BDR, Developer, Designer</p>
+        </div>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>Enrichment Pipeline</h3>
+      ${makeFlowSteps([
+        {title:'Parse Result',desc:'Name/title/company'},
+        {title:'Validate',desc:'2+ char names, good title'},
+        {title:'Deduplicate',desc:'Email + name+company'},
+        {title:'Hunter.io',desc:'Domain search + finder'},
+        {title:'Insert Lead',desc:'Up to 15 per run'},
+      ])}
+    </div>`;
+}
+
+function renderAutomation(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Automation Rules Engine</h2>
+      <p>Event-driven workflow automation with configurable triggers, actions, dry-run mode, and dead-letter queue.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Trigger Types</h3>
+      <div class="agent-grid">
+        <div class="card"><h4>stage_change</h4><p>Fires when opportunity stage matches from_stage.</p></div>
+        <div class="card"><h4>days_idle</h4><p>Fires when last_contacted is NULL or (now - last_contacted) >= threshold days.</p></div>
+        <div class="card"><h4>reply_received</h4><p>Fires when contact.reply_status matches target.</p></div>
+        <div class="card"><h4>score_threshold</h4><p>Fires when AI score (risk or close_probability) >= min_score.</p></div>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>Action Types</h3>
+      <div class="agent-grid">
+        <div class="card"><h4>advance_stage</h4><p>Updates opportunity to target_stage.</p></div>
+        <div class="card"><h4>create_activity</h4><p>Inserts activity note.</p></div>
+        <div class="card"><h4>update_status</h4><p>Updates contact status.</p></div>
+        <div class="card"><h4>tag_contact</h4><p>Appends tag (comma-separated).</p></div>
+        <div class="card"><h4>generate_recommendation</h4><p>Calls AI recommendation engine.</p></div>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>5 Default Seeded Rules</h3>
+      <table class="pipeline-table">
+        <thead><tr><th>Rule</th><th>Trigger</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>Stale Lead Alert</td><td>14+ days idle</td><td>Tag 'stale-lead'</td></tr>
+          <tr><td>Auto-advance on positive reply</td><td>Positive reply received</td><td>Advance to 'replied'</td></tr>
+          <tr><td>AI recs for high-risk</td><td>Risk score >= 60</td><td>Generate recommendation</td></tr>
+          <tr><td>Log overdue follow-ups</td><td>7+ days idle</td><td>Create activity note</td></tr>
+          <tr><td>Tag negative replies</td><td>Negative reply</td><td>Tag 'needs-objection-handling'</td></tr>
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function renderBounce(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Bounce Detection & Email Re-Enrichment</h2>
+      <p>Detects bounces via IMAP, marks contacts, stops sequences, and attempts alternate email discovery through three sources.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Bounce Detection Flow</h3>
+      ${makeFlowSteps([
+        {title:'IMAP Poll',desc:'Every 15 min'},
+        {title:'Pattern Match',desc:'mailer-daemon, postmaster'},
+        {title:'Extract Email',desc:'Regex from body'},
+        {title:'Mark Contact',desc:'reply_status=bounced'},
+        {title:'Stop Sequences',desc:'All enrollments'},
+        {title:'Queue Enrichment',desc:'bounce_enrichment_queue'},
+      ])}
+    </div>
+    <div class="flow-section">
+      <h3>Re-Enrichment Pipeline (3 Sources)</h3>
+      ${makeFlowSteps([
+        {title:'1. Hunter.io',desc:'Email Finder (score >= 50)'},
+        {title:'2. Apollo.io',desc:'People Enrichment (conf >= 75)'},
+        {title:'3. Serper SERP',desc:'Google search (conf 45)'},
+        {title:'Update Contact',desc:'New email, clear status'},
+        {title:'Log Activity',desc:'Email Re-Enriched'},
+      ])}
+      <p style="font-size:12px;color:#888;margin-top:8px">Batch: up to 25 contacts per run at 7:30 AM daily, 0.3s delay between enrichments.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Recovery Dashboard</h3>
+      <div class="metrics-grid">
+        <div class="metric-card"><div class="metric-value">total</div><div class="metric-label">Total Bounced</div></div>
+        <div class="metric-card"><div class="metric-value">pending</div><div class="metric-label">In Queue</div></div>
+        <div class="metric-card"><div class="metric-value">found</div><div class="metric-label">Recovered</div></div>
+        <div class="metric-card"><div class="metric-value">%</div><div class="metric-label">Recovery Rate</div></div>
+      </div>
+    </div>`;
+}
+
+function renderLinkedIn(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>LinkedIn Prospecting Module</h2>
+      <p>Search management, action tracking, and a multi-stage prospecting pipeline. All LinkedIn actions are MANUAL ONLY.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Search Management</h3>
+      ${makeFlowSteps([
+        {title:'Create Search',desc:'Filters: industry, location, title'},
+        {title:'Add Results',desc:'Bulk import'},
+        {title:'Review',desc:'new/reviewed/added/skipped'},
+        {title:'Convert to CRM',desc:'origin=linkedin_search'},
+      ])}
+    </div>
+    <div class="flow-section">
+      <h3>Action Types</h3>
+      <div class="agent-grid">
+        <div class="card"><h4>view_profile</h4><p>View a prospect's profile. Scheduled execution.</p></div>
+        <div class="card"><h4>connect</h4><p>Send connection request. MANUAL ONLY - no automation.</p></div>
+        <div class="card"><h4>inmail</h4><p>Send InMail message. Response tracking: accepted/declined.</p></div>
+        <div class="card"><h4>follow</h4><p>Follow a prospect's updates.</p></div>
+        <div class="card"><h4>endorse</h4><p>Endorse skills. MANUAL ONLY.</p></div>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>Prospecting Pipeline</h3>
+      ${makeFlowSteps([
+        {title:'Identified',desc:'LinkedIn data found'},
+        {title:'Connected',desc:'Request sent'},
+        {title:'Accepted',desc:'Connection accepted'},
+        {title:'Messaged',desc:'InMail sent'},
+        {title:'Responded',desc:'Reply received'},
+        {title:'Meeting Booked',desc:'Converted'},
+      ])}
+    </div>
+    <div class="card" style="border-color:rgba(239,68,68,0.3);margin-top:16px">
+      <h4 style="color:#EF4444">CRITICAL GUARDRAIL</h4>
+      <p>All LinkedIn actions are MANUAL ONLY. No automated connection requests or messages. Protects account integrity and complies with platform ToS.</p>
+    </div>`;
+}
+
+function renderMarketIntel(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Market Intelligence System</h2>
+      <p>Multi-source signal ingestion, processing pipeline, and ICP analysis for prospect generation.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Signal Ingestion</h3>
+      <div class="agent-grid">
+        <div class="card"><h4>Sources</h4><p>web_search, linkedin, news, social, industry_report</p></div>
+        <div class="card"><h4>Signal Types</h4><p>trend, company_event, hiring, expansion, happy_hour_mention, corporate_event</p></div>
+        <div class="card"><h4>Scoring</h4><p>relevance_score (0-1), sentiment (positive/neutral/negative), company association</p></div>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>Processing Pipeline</h3>
+      ${makeFlowSteps([
+        {title:'Ingest Signal',desc:'Multi-source'},
+        {title:'Score Relevance',desc:'0-1 scale'},
+        {title:'Auto-Alert',desc:'If relevance > 0.75'},
+        {title:'Match Contacts',desc:'Hot lead detection'},
+        {title:'Aggregate Intel',desc:'Per-company ai_score'},
+      ])}
+    </div>
+    <div class="flow-section">
+      <h3>ICP Analysis & Prospect Generation</h3>
+      <div class="card">
+        <h4>analyze_crm_icp()</h4>
+        <p>Extracts ideal customer profile from won deals: top industries, company sizes, locations by win rate. get_linkedin_prospect_queries() generates 5+ ready-to-use LinkedIn search definitions targeting ideal segments.</p>
+      </div>
+    </div>`;
+}
+
+function renderCalendar(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Calendar Integration & Meeting Management</h2>
+      <p>Google Calendar bidirectional sync, conflict resolution, meeting prep briefs, and auto-scheduling.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Bidirectional Sync</h3>
+      ${makeFlowSteps([
+        {title:'Push (CRM->Cal)',desc:'Create Google events'},
+        {title:'Pull (Cal->CRM)',desc:'Import external events'},
+        {title:'Full Sync',desc:'Push + Pull + conflicts'},
+        {title:'Audit Log',desc:'Complete trail'},
+      ])}
+    </div>
+    <div class="flow-section">
+      <h3>Conflict Resolution Modes</h3>
+      <div class="metrics-grid">
+        <div class="metric-card"><div class="metric-value">CRM</div><div class="metric-label">CRM Wins</div></div>
+        <div class="metric-card"><div class="metric-value">CAL</div><div class="metric-label">Calendar Wins</div></div>
+        <div class="metric-card"><div class="metric-value">MERGE</div><div class="metric-label">Combine Both</div></div>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>Meeting Prep Brief Contents</h3>
+      <ul class="detail-list">
+        <li>Meeting details (title, time, location)</li>
+        <li>Contact context (name, company, job title, email, phone, LinkedIn)</li>
+        <li>Recent activities (last 5)</li>
+        <li>AI score and pipeline stage</li>
+        <li>Previous meetings (last 5)</li>
+        <li>AI-generated talking points (contextual by stage)</li>
+      </ul>
+    </div>
+    <div class="flow-section">
+      <h3>Auto-Scheduling Flow</h3>
+      ${makeFlowSteps([
+        {title:'POST /api/cal/schedule',desc:'Find first slot'},
+        {title:'7-Day Lookahead',desc:'Check availability'},
+        {title:'Round to Hour',desc:'Next available'},
+        {title:'Create Meeting',desc:'Update contact'},
+        {title:'Push to Calendar',desc:'Bidirectional sync'},
+      ])}
+    </div>`;
+}
+
+function renderProposals(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Proposal System & Tier Logic</h2>
+      <p>Three-tier pricing with intelligent recommendation, one-pager HTML generation, and merge fields.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Tier Pricing</h3>
+      <table class="pipeline-table">
+        <thead><tr><th>Tier</th><th>Price/Person</th><th>Best For</th><th>Includes</th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:600;color:#FFF">Classic</td><td>~$45</td><td>Small team events, casual happy hours</td><td>AI cocktail machine, standard menu, setup/teardown</td></tr>
+          <tr><td style="font-weight:600;color:#FFF">Signature</td><td>~$65</td><td>Client entertainment, department celebrations</td><td>Custom menu, premium spirits, branded elements</td></tr>
+          <tr><td style="font-weight:600;color:#FFF">Reserve</td><td>~$190</td><td>Executive events, product launches, galas</td><td>Dedicated mixologist, custom cocktails, full bar, premium everything</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="flow-section">
+      <h3>Tier Selection Logic</h3>
+      <ul class="detail-list">
+        <li>amount_estimate &lt; $5k = Classic</li>
+        <li>$5k - $15k = Signature</li>
+        <li>&gt; $15k = Reserve</li>
+        <li>Company size &gt; 500 + VP/Director/C-suite = never Classic</li>
+        <li>Headcount estimated from budget / per-person price</li>
+      </ul>
+    </div>
+    <div class="flow-section">
+      <h3>Proposal Generation Flow</h3>
+      ${makeFlowSteps([
+        {title:'Identify Ready',desc:'Post-meeting, positive'},
+        {title:'Estimate Guests',desc:'If not provided'},
+        {title:'Match Tier',desc:'Classic/Signature/Reserve'},
+        {title:'Calculate Price',desc:'tier x guests + add-ons'},
+        {title:'Select Case Studies',desc:'2-3, same industry'},
+        {title:'Generate One-Pager',desc:'HTML with merge fields'},
+        {title:'Queue Review',desc:'Fareed approval'},
+      ])}
+    </div>`;
+}
+
+function renderReports(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Reporting & Analytics Suite</h2>
+      <p>10 report types with CSV/JSON export, pipeline trending via daily snapshots, and comprehensive dashboards.</p>
+    </div>
+    <div class="flow-section">
+      <h3>10 Report Types</h3>
+      <table class="pipeline-table">
+        <thead><tr><th>Report</th><th>Endpoint</th><th>Contents</th></tr></thead>
+        <tbody>
+          <tr><td>Pipeline</td><td>/api/reports/pipeline</td><td>Stage breakdown: count, total_value, avg_value, avg_days_in_stage</td></tr>
+          <tr><td>Risk</td><td>/api/reports/risk</td><td>At-risk contacts with min_score filter</td></tr>
+          <tr><td>Activity</td><td>/api/reports/activity</td><td>Activity breakdown by type and contact (configurable days)</td></tr>
+          <tr><td>Conversion</td><td>/api/reports/conversion</td><td>Funnel: reply rate, meeting rate, proposal rate, close rate</td></tr>
+          <tr><td>Top Accounts</td><td>/api/reports/top-accounts</td><td>Top 20 accounts by pipeline value</td></tr>
+          <tr><td>Stale Leads</td><td>/api/reports/stale-leads</td><td>No activity in N days (default 14)</td></tr>
+          <tr><td>Automation</td><td>/api/reports/automation</td><td>Execution stats, rule performance</td></tr>
+          <tr><td>Dashboard</td><td>/api/reports/dashboard</td><td>KPI dashboard with all metrics</td></tr>
+          <tr><td>Revenue</td><td>/api/revenue/dashboard</td><td>Goal tracking, weekly trends, pipeline donut</td></tr>
+          <tr><td>Customer Success</td><td>/api/customer-success</td><td>Post-close metrics, referrals, upsell opportunities</td></tr>
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function renderEOD(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>End-of-Day Report Engine</h2>
+      <p>Professional PDF report generated daily at 6:15 PM covering 7:00 AM - 6:00 PM business window. Auto-emailed with PDF attachment.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Report Sections</h3>
+      <div class="agent-grid">
+        <div class="card"><h4>Daily Snapshot</h4><p>Emails sent, opens, open_rate, positive replies, reply_rate, new contacts, meetings booked.</p></div>
+        <div class="card"><h4>Outreach Summary</h4><p>Reply breakdown by status: positive, interested, question, objection, bounced, negative.</p></div>
+        <div class="card"><h4>Pipeline Activity</h4><p>New contacts, deals won/lost, stage changes, active vs total contacts.</p></div>
+        <div class="card"><h4>AI & Sequence Activity</h4><p>Sequence emails sent, active enrollments, AI drafts created/sent, bounces re-enriched.</p></div>
+        <div class="card"><h4>Top Contacts</h4><p>Most active contacts with lead scores and engagement status.</p></div>
+        <div class="card"><h4>Tomorrow's Queue</h4><p>Contacts due for follow-up in next 24 hours.</p></div>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>Report Flow</h3>
+      ${makeFlowSteps([
+        {title:'6:15 PM Trigger',desc:'Scheduler fires'},
+        {title:'Query Data',desc:'7AM-6PM window'},
+        {title:'Build PDF',desc:'reportlab, branded'},
+        {title:'Email Boss',desc:'PDF attachment'},
+        {title:'Log Activity',desc:'Audit trail'},
+      ])}
+    </div>`;
+}
+
+function renderNotifications(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Notification System</h2>
+      <p>Multi-channel engine: in-app (database), desktop (macOS osascript), and email (SMTP).</p>
+    </div>
+    <div class="flow-section">
+      <h3>Priority Levels & Types</h3>
+      <div class="agent-grid">
+        <div class="card"><h4>Priority: low, normal, high, urgent</h4><p>Determines delivery channel and visibility.</p></div>
+        <div class="card"><h4>Types</h4><p>meeting_reminder, hot_lead, webhook_event, campaign_update, custom</p></div>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>Periodic Checks</h3>
+      <ul class="detail-list">
+        <li>Meeting Reminders: Checks for meetings starting within 15 minutes, creates high-priority notifications</li>
+        <li>Hot Lead Detection: Contacts with lead_score >= 80, urgent-priority (deduped within 7 days)</li>
+        <li>Campaign Milestones: Notifies at 50% and 100% campaign completion</li>
+      </ul>
+    </div>`;
+}
+
+function renderWebhooks(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Webhook Integration System</h2>
+      <p>Incoming webhook endpoint with rate limiting, field mapping, and audit logging.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Webhook Flow</h3>
+      ${makeFlowSteps([
+        {title:'POST /incoming/{token}',desc:'Rate: 60 req/min'},
+        {title:'Event Type',desc:'contact.create/update, activity.log'},
+        {title:'Field Mapping',desc:'Dot notation'},
+        {title:'Process',desc:'Create/update records'},
+        {title:'Audit Log',desc:'Payload, result, IP'},
+      ])}
+    </div>`;
+}
+
+function renderRBAC(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>User Management & RBAC</h2>
+      <p>Three roles with graduated permissions and session-based authentication.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Role Permissions</h3>
+      <table class="pipeline-table">
+        <thead><tr><th>Role</th><th>Contacts</th><th>Users/Settings</th><th>Reports</th><th>Automation</th><th>AI</th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:600;color:#C8A97E">Admin</td><td>View/edit all</td><td>Full access</td><td>Full access</td><td>Full access</td><td>Full access</td></tr>
+          <tr><td style="font-weight:600;color:#7C6DF5">Manager</td><td>View/edit all</td><td>No access</td><td>Full access</td><td>Full access</td><td>Full access</td></tr>
+          <tr><td style="font-weight:600;color:#2DD4BF">Agent</td><td>Assigned only</td><td>No access</td><td>No access</td><td>No access</td><td>Full access</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:12px;color:#888;margin-top:8px">Session-based auth with 24-hour token TTL. Default credentials: admin/admin. Localhost bypass for local development.</p>
+    </div>`;
+}
+
+function renderScheduler(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Autonomous Scheduler (24/7 Operations)</h2>
+      <p>Daemon thread ticking every 30 seconds. Business-hours gate (7AM-6PM) for interval jobs. Daily jobs fire at scheduled time.</p>
+    </div>
+    <div class="flow-section">
+      <h3>14 Scheduled Jobs</h3>
+      <table class="pipeline-table">
+        <thead><tr><th>Job</th><th>Schedule</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>reply_poll</td><td>Every 5 min</td><td>Poll Gmail IMAP for replies, update reply_status</td></tr>
+          <tr><td>bounce_scanner</td><td>Every 15 min</td><td>IMAP bounce detection, mark bounced, stop sequences</td></tr>
+          <tr><td>sequence_runner</td><td>Every 10 min</td><td>Process due sequence enrollments, send scheduled emails</td></tr>
+          <tr><td>automation_runner</td><td>Every 15 min</td><td>Run all enabled automation rules (500 contact limit)</td></tr>
+          <tr><td>pan_sourcer</td><td>Every 4 hours</td><td>Autonomous lead sourcing via Serper + Hunter</td></tr>
+          <tr><td>ai_scorer</td><td>Every 2 hours</td><td>Refresh AI risk + opportunity scores (1000 batch)</td></tr>
+          <tr><td>hermes_sender</td><td>Every 30 min</td><td>Send waiting email drafts via SMTP (50 per run)</td></tr>
+          <tr><td>ai_personalizer</td><td>6:30 AM daily</td><td>Pre-generate personalized drafts for best leads (30)</td></tr>
+          <tr><td>morning_briefing</td><td>7:00 AM daily</td><td>Email KPI briefing to admin</td></tr>
+          <tr><td>bounce_enricher</td><td>7:30 AM daily</td><td>Re-enrich bounced contacts (25 per run)</td></tr>
+          <tr><td>eod_report</td><td>6:15 PM daily</td><td>Generate comprehensive PDF report and email</td></tr>
+          <tr><td>nightly_backup</td><td>12:05 AM daily</td><td>Compressed backup, rotate (14 days), pipeline snapshot</td></tr>
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function renderBackup(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Backup, Recovery & Database Operations</h2>
+      <p>SQLite online backup API, gzip compression, 14-day retention, integrity checks, and FUSE-aware sync.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Backup Flow</h3>
+      ${makeFlowSteps([
+        {title:'SQLite Backup API',desc:'Atomic backup'},
+        {title:'Gzip Compress',desc:'Optional'},
+        {title:'JSON Metadata',desc:'Alongside backup'},
+        {title:'Rotate',desc:'14-day retention'},
+        {title:'Integrity Check',desc:'PRAGMA quick_check'},
+      ])}
+    </div>
+    <div class="flow-section">
+      <h3>FUSE-Aware Sync</h3>
+      <div class="card">
+        <p>Runs from /tmp local FS during operation for performance. Raw binary chunk copy with fsync back to canonical FUSE path on exit. Pre-restore safety backup of current DB before any restore operation.</p>
+      </div>
+    </div>`;
+}
+
+function renderFrontend(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Frontend SPA & UI Components</h2>
+      <p>17,900-line single-file HTML application with 18+ tabs, dark/light mode, and Liquid Glass design system.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Primary UI Panels (18+ Tabs)</h3>
+      <div class="agent-grid">
+        <div class="card"><h4>Dashboard</h4><p>Stats grid, contact cards, kanban board, activity feed, morning briefing, AI recommendations.</p></div>
+        <div class="card"><h4>Contacts</h4><p>Card grid with avatars, scores, LinkedIn links. Filtering, sorting, multi-select, inline stage changes.</p></div>
+        <div class="card"><h4>Kanban Board</h4><p>Drag-and-drop pipeline with 10 stage columns, deal values, card hover effects.</p></div>
+        <div class="card"><h4>Agent Control</h4><p>25 agent cards with toggles, metrics, Run Full Pipeline button.</p></div>
+        <div class="card"><h4>Email Composer</h4><p>AI draft generation (Claude), persona templates, A/B subject lines, SMTP config panel.</p></div>
+        <div class="card"><h4>Sequences</h4><p>Multi-step drip campaigns with triggers, branching, enrollment management.</p></div>
+        <div class="card"><h4>Analytics</h4><p>Historical charts, conversion funnels, A/B results, sales velocity metrics.</p></div>
+        <div class="card"><h4>Market Intel</h4><p>Company signals, alerts, trends, hot leads, trending companies.</p></div>
+        <div class="card"><h4>Calendar</h4><p>Google Calendar sync, meeting prep briefs, today's agenda.</p></div>
+        <div class="card"><h4>Reports</h4><p>10 report types with export (CSV, JSON, PDF).</p></div>
+        <div class="card"><h4>Win/Loss Modal</h4><p>Deal closure with reason selection, value entry, notes.</p></div>
+        <div class="card"><h4>Meeting Prep Modal</h4><p>Pre-meeting context with agent sparklines, forecast bars.</p></div>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>Design System</h3>
+      <div class="card">
+        <h4>Liquid Glass Design</h4>
+        <p>Space Grotesk font, Purple primary (#7C6DF5). Dark mode (#000000 bg, rgba surfaces) and Light mode (#E4E4E8 bg, white surfaces). Animation tokens: fast (140ms), mid (240ms), slow (400ms spring). Responsive: 768px tablet, 480px mobile breakpoints.</p>
+      </div>
+      <div class="card" style="margin-top:8px">
+        <h4>Pipeline Badges</h4>
+        <p>new (purple), contacted (orange), replied (green), sales (violet), meeting (blue), proposal (pink), negotiation (orange-red). Health: hot (green), warm (amber), cold (gray), frozen (red).</p>
+      </div>
+    </div>`;
+}
+
+function renderFlags(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>v7 Feature Flags (14 Flags, 13 Active)</h2>
+      <p>The fundamental shift from managed pipeline to self-governing autonomous engine.</p>
+    </div>
+    <div class="flow-section">
+      <h3>All 14 Feature Flags</h3>
+      <table class="pipeline-table">
+        <thead><tr><th>#</th><th>Flag</th><th>Status</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Company Universe Engine</td><td style="color:#22C55E">ACTIVE</td><td>Zeus maintains 10,000+ NYC company database (20-250 emp)</td></tr>
+          <tr><td>2</td><td>Dual Scoring</td><td style="color:#22C55E">ACTIVE</td><td>Separate ICP fit (static) and engagement activity (dynamic) scores</td></tr>
+          <tr><td>3</td><td>Industry Waves</td><td style="color:#22C55E">ACTIVE</td><td>Outreach batched by vertical (Finance, Tech, Media, etc.)</td></tr>
+          <tr><td>4</td><td>Per-Account Send Caps</td><td style="color:#22C55E">ACTIVE</td><td>Limits touches per account per period to prevent over-saturation</td></tr>
+          <tr><td>5</td><td>Threaded Follow-ups</td><td style="color:#22C55E">ACTIVE</td><td>Full conversation context across cadence touches</td></tr>
+          <tr><td>6</td><td>Self-Healing Pipeline</td><td style="color:#22C55E">ACTIVE</td><td>Auto-detection and repair of data inconsistencies</td></tr>
+          <tr><td>7</td><td>Account Enrichment</td><td style="color:#22C55E">ACTIVE</td><td>Continuous firmographic enhancement from multiple sources</td></tr>
+          <tr><td>8</td><td>Account Queue & Rotation</td><td style="color:#22C55E">ACTIVE</td><td>Systematic assignment with balanced T1/T2/T3 coverage</td></tr>
+          <tr><td>9</td><td>Signal Refresh Nurture</td><td style="color:#22C55E">ACTIVE</td><td>Re-engages stalled leads when new buying signals detected</td></tr>
+          <tr><td>10</td><td>Relationship Warmth</td><td style="color:#22C55E">ACTIVE</td><td>Dynamic engagement temperature (0-100) drives messaging</td></tr>
+          <tr><td>11</td><td>Demo Hook Engine</td><td style="color:#22C55E">ACTIVE</td><td>Generates contextual hooks for meeting invitations</td></tr>
+          <tr><td>12</td><td>New Email Style</td><td style="color:#22C55E">ACTIVE</td><td>~15% open rate and ~10% reply rate improvement</td></tr>
+          <tr><td>13</td><td>Tenant Directory</td><td style="color:#EF4444">INACTIVE</td><td>Reserved for future multi-tenant deployment</td></tr>
+          <tr><td>14</td><td>Account Send Log</td><td style="color:#22C55E">ACTIVE</td><td>Per-account daily cap (1 send/day, 3 active contacts/month)</td></tr>
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function renderGuardrails(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Guardrails, Compliance & Security</h2>
+      <p>All guardrails are NON-BYPASSABLE. Email, social media, data, and operational safeguards.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Email Guardrails</h3>
+      <ul class="detail-list">
+        <li>Rate limit: 5 emails per batch, 5-minute intervals</li>
+        <li>Send window: Monday-Friday only, 8:30 AM - 5:30 PM ET</li>
+        <li>Daily cap: ~290 emails (below Gmail's 500/day limit)</li>
+        <li>CAN-SPAM compliance: unsubscribe link, physical address, accurate sender</li>
+        <li>Domain authentication: SPF/DKIM/DMARC at infrastructure level</li>
+      </ul>
+    </div>
+    <div class="flow-section">
+      <h3>Social Media Guardrails</h3>
+      <ul class="detail-list">
+        <li>No automated LinkedIn connection requests</li>
+        <li>No automated direct messages</li>
+        <li>No auto-connect, endorse, or other platform actions</li>
+        <li>Reason: Protect account integrity, comply with platform ToS</li>
+      </ul>
+    </div>
+    <div class="flow-section">
+      <h3>Data & Operational Guardrails</h3>
+      <ul class="detail-list">
+        <li>No auto-send from newly discovered metadata (requires review)</li>
+        <li>Every lead follows full 5-touch sequence (no escalation bypasses)</li>
+        <li>Full audit trail on every action with timestamp and process ID</li>
+        <li>Human review mandatory: all replies, proposals, meeting accepts, deal closures</li>
+      </ul>
+    </div>`;
+}
+
+function renderInfra(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Infrastructure & Deployment</h2>
+      <p>Native macOS with launchd for process management. deploy_mac.sh, start_crm.sh, and crm_ctl.sh scripts.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Deployment Flow</h3>
+      ${makeFlowSteps([
+        {title:'deploy_mac.sh',desc:'Installation script'},
+        {title:'Python 3.8+ Check',desc:'Validation'},
+        {title:'Dir Creation',desc:'~/Library/App Support'},
+        {title:'rsync Copy',desc:'File transfer'},
+        {title:'.env Generation',desc:'Environment setup'},
+        {title:'LaunchAgent',desc:'RunAtLoad, KeepAlive'},
+      ])}
+    </div>
+    <div class="flow-section">
+      <h3>Control Scripts</h3>
+      <div class="agent-grid">
+        <div class="card"><h4>start_crm.sh</h4><p>Pre-flight checks (Python version, port conflicts), creates log/backup dirs, foreground or daemon mode.</p></div>
+        <div class="card"><h4>crm_ctl.sh</h4><p>CLI for: status, start, stop, restart, logs, backup, health check, browser launch.</p></div>
+      </div>
+    </div>`;
+}
+
+function renderMetrics(el){
+  el.innerHTML=`
+    <div class="flow-header">
+      <h2>Performance Metrics & Projections</h2>
+      <p>Current pipeline metrics, outreach performance, time reclaimed, and revenue projections.</p>
+    </div>
+    <div class="flow-section">
+      <h3>Current Pipeline Metrics</h3>
+      <div class="metrics-grid">
+        <div class="metric-card"><div class="metric-value">10,026</div><div class="metric-label">Total Accounts</div></div>
+        <div class="metric-card"><div class="metric-value">25,066</div><div class="metric-label">Total Contacts</div></div>
+        <div class="metric-card"><div class="metric-value">15,118</div><div class="metric-label">Active Opportunities</div></div>
+        <div class="metric-card"><div class="metric-value">$164.7M</div><div class="metric-label">Pipeline Value</div></div>
+        <div class="metric-card"><div class="metric-value">$10,897</div><div class="metric-label">Average Deal Size</div></div>
+        <div class="metric-card"><div class="metric-value">$3K-$18K</div><div class="metric-label">Deal Range</div></div>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>Outreach Metrics</h3>
+      <div class="metrics-grid">
+        <div class="metric-card"><div class="metric-value">1,182</div><div class="metric-label">Total Emails Sent</div></div>
+        <div class="metric-card"><div class="metric-value">290</div><div class="metric-label">Daily Peak Sends</div></div>
+        <div class="metric-card"><div class="metric-value">2</div><div class="metric-label">Positive Replies</div></div>
+        <div class="metric-card"><div class="metric-value">3.0%</div><div class="metric-label">Variant A Reply Rate</div></div>
+      </div>
+    </div>
+    <div class="flow-section">
+      <h3>Time Reclaimed: 52 Hours/Week</h3>
+      <table class="pipeline-table">
+        <thead><tr><th>Task</th><th>Before (hrs/wk)</th><th>After (hrs/wk)</th><th>Saved</th></tr></thead>
+        <tbody>
+          <tr><td>Lead sourcing & research</td><td>15</td><td>1</td><td style="color:#22C55E">14 hrs</td></tr>
+          <tr><td>Email composition & sending</td><td>12</td><td>1</td><td style="color:#22C55E">11 hrs</td></tr>
+          <tr><td>Follow-up tracking</td><td>8</td><td>0.5</td><td style="color:#22C55E">7.5 hrs</td></tr>
+          <tr><td>Pipeline management</td><td>6</td><td>0.5</td><td style="color:#22C55E">5.5 hrs</td></tr>
+          <tr><td>Proposal assembly</td><td>10</td><td>3</td><td style="color:#22C55E">7 hrs</td></tr>
+          <tr><td>Reporting & analytics</td><td>3</td><td>0</td><td style="color:#22C55E">3 hrs</td></tr>
+          <tr><td>Reply monitoring</td><td>4</td><td>0.5</td><td style="color:#22C55E">3.5 hrs</td></tr>
+          <tr><td style="font-weight:600;color:#FFF">TOTAL</td><td style="font-weight:600">58</td><td style="font-weight:600">6.5</td><td style="font-weight:600;color:#C8A97E">52 hrs</td></tr>
+        </tbody>
+      </table>
+      <div class="card" style="margin-top:12px"><p>Annual productivity value at $45/hour: <span style="color:#C8A97E;font-weight:700">$121,680</span></p></div>
+    </div>
+    <div class="flow-section">
+      <h3>Revenue Projections (Steady State)</h3>
+      <div class="metrics-grid">
+        <div class="metric-card"><div class="metric-value">25-35</div><div class="metric-label">Monthly Meetings</div></div>
+        <div class="metric-card"><div class="metric-value">15-20</div><div class="metric-label">Monthly Proposals</div></div>
+        <div class="metric-card"><div class="metric-value">5-8</div><div class="metric-label">Monthly Deals Closed</div></div>
+        <div class="metric-card"><div class="metric-value">$54K-$87K</div><div class="metric-label">Monthly Revenue</div></div>
+        <div class="metric-card"><div class="metric-value">$654K-$1.05M</div><div class="metric-label">Annual Revenue</div></div>
+        <div class="metric-card"><div class="metric-value">26-70x</div><div class="metric-label">ROI vs Traditional</div></div>
+      </div>
+      <div class="card" style="margin-top:12px"><p>APEX annual cost: $15K-$25K vs 3 SDRs: $225K-$330K</p></div>
+    </div>`;
+}
+
+// Initialize
+selectSection('exec');
+</script>
+</body>
+</html>
